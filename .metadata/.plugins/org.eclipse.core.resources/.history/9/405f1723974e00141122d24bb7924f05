@@ -1,0 +1,185 @@
+package com.hieu.nansuke;
+
+import android.app.Activity;
+import android.content.Intent;
+import android.graphics.Color;
+import android.os.Bundle;
+import android.util.DisplayMetrics;
+import android.util.Log;
+import android.view.Gravity;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
+import android.widget.TableLayout;
+import android.widget.TableRow;
+import android.widget.TableRow.LayoutParams;
+import android.widget.TextView;
+
+public class PlayActivity extends Activity {
+
+	// variables:
+	String level = "0";
+	TextView text[][];
+
+	// ---------------
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_play);
+		Intent myself = getIntent();// gets intent of itself
+		level = myself.getStringExtra("level");// gets level of previous intent
+		// size of screen
+		DisplayMetrics displaymetrics = new DisplayMetrics();
+		getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
+		int height = displaymetrics.heightPixels;
+		int width = displaymetrics.widthPixels;
+		
+		Log.e("Here is level and size of screen:", level +"|"+height+"|"+width);
+		switch (level) {// level describer dimension of game: 0.0 => 3x3, 0.5 =>
+						// 0.0
+		case "0.0":
+		case "0.5":
+			TableLayout table = new TableLayout(this);
+			TableRow tr11 = new TableRow(this);
+			tr11.setBackgroundColor(Color.BLACK);
+			tr11.setPadding(0, 0, 0, 2); // Border between rows
+
+			TableRow.LayoutParams llp = new TableRow.LayoutParams(
+					LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+			llp.setMargins(0, 0, 2, 0);// 2px right-margin
+
+			// New Cell
+			LinearLayout cell2 = new LinearLayout(this);
+			cell2.setBackgroundColor(Color.WHITE);
+			cell2.setLayoutParams(llp);// 2px border on the right for the cell
+
+			TextView tv = new TextView(this);
+			tv.setText("1");
+			tv.setPadding(0, 0, 4, 3);
+
+			cell2.addView(tv);
+			tr11.addView(cell2);
+			// add as many cells you want to a row, using the same approach
+
+			table.addView(tr11);
+			table.setBaselineAligned(true);
+			setContentView(table);
+			break;
+		case "1.0":
+		case "1.5":
+			// create TableLayout for TableRows
+			TableLayout tl1 = new TableLayout(this);
+
+			TableRow.LayoutParams llp1 = new TableRow.LayoutParams(
+					LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+			llp1.setMargins(0, 0, 2, 0);// 2px right-margin (duo`ng ke? phai?)
+
+			tl1.setLayoutParams(new TableRow.LayoutParams(
+					TableRow.LayoutParams.WRAP_CONTENT,
+					TableRow.LayoutParams.WRAP_CONTENT));
+			// tl1.setStretchAllColumns(true);
+			TableRow tr[] = new TableRow[5];
+			text = new TextView[5][5];
+			LinearLayout cell[][] = new LinearLayout[5][5];
+			for (int i = 0; i < 5; i++) {
+				tr[i] = new TableRow(this);
+				tr[i].setBackgroundColor(Color.DKGRAY);// set bgcolor for table
+														// row
+				tr[i].setPadding(0, 0, 0, 2); // Border between rows
+				tr[i].setLayoutParams(new LayoutParams(
+						width-10, LayoutParams.WRAP_CONTENT));// tr will wrap around contents
+				for (int j = 0; j < 5; j++) {
+					cell[i][j] = new LinearLayout(this);
+					text[i][j] = new TextView(this);
+					text[i][j].setText("     ");
+					text[i][j].setPadding(0, 0, 4, 3);
+					text[i][j].setGravity(Gravity.CENTER);
+					cell[i][j].addView(text[i][j]);
+					if ((i + j) % 2 == 0) {
+						cell[i][j].setBackgroundColor(Color.LTGRAY);
+					} else {
+						cell[i][j].setBackgroundColor(Color.WHITE);
+					}
+					cell[i][j].setLayoutParams(llp1);
+					tr[i].addView(cell[i][j]);
+				}
+				tl1.addView(tr[i]);
+			}
+			setContentView(tl1);
+			break;
+		case "2.0":
+		case "2.5":
+			Button b1,
+			b2,
+			b3,
+			b4;
+			EditText et1,
+			et2,
+			et3;
+			TableLayout tl = new TableLayout(this);
+
+			tl.setLayoutParams(new TableRow.LayoutParams(
+					TableRow.LayoutParams.WRAP_CONTENT,
+					TableRow.LayoutParams.WRAP_CONTENT));
+			tl.setStretchAllColumns(true);
+
+			TableRow tr1 = new TableRow(this);
+
+			et1 = new EditText(this);
+			et1.setHeight(50);
+			et1.setWidth(50);
+			et1.setText("first row text box");
+
+			b1 = new Button(this);
+			b1.setHeight(50);
+			b1.setWidth(50);
+			b1.setText("first row button");
+
+			// b1.setLayoutParams(params);
+			tr1.addView(et1);
+			tr1.addView(b1);
+			tl.addView(tr1);
+
+			TableRow tr2 = new TableRow(this);
+			et2 = new EditText(this);
+			et2.setHeight(50);
+			et2.setWidth(50);
+			et2.setText("second row text box");
+
+			b2 = new Button(this);
+			b2.setHeight(50);
+			b2.setWidth(50);
+			b2.setText("second row button");
+			b4 = new Button(this);
+			b4.setHeight(50);
+			b4.setWidth(50);
+			b4.setText("second row second button");
+			tr2.addView(b4);
+			tr2.addView(et2);
+			tr2.addView(b2);
+
+			tl.addView(tr2);
+
+			TableRow tr3 = new TableRow(this);
+
+			et3 = new EditText(this);
+			et3.setHeight(50);
+			et3.setWidth(50);
+			et3.setText("third row text box");
+
+			b3 = new Button(this);
+			b3.setHeight(50);
+			b3.setWidth(50);
+			b3.setText("third row button");
+			b3.setGravity(android.view.Gravity.RIGHT);
+			tr3.addView(et3);
+			tr3.addView(b3);
+
+			tl.addView(tr3);
+
+			setContentView(tl);
+		default:
+		}
+	}
+}

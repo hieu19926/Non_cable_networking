@@ -1,0 +1,439 @@
+package com.hieu.nansuke;
+
+import com.hieu.supporter.randomize;
+
+import android.app.Activity;
+import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.os.Bundle;
+import android.util.DisplayMetrics;
+import android.util.Log;
+import android.view.Gravity;
+import android.widget.LinearLayout;
+import android.widget.TableLayout;
+import android.widget.TableRow;
+import android.widget.TableRow.LayoutParams;
+import android.widget.TextView;
+
+public class PlayActivity extends Activity {
+
+	// variables:
+	String level = "0";
+	TextView text[][];
+	int tableSize = 4;
+	TableLayout tl1;
+	TableRow.LayoutParams llp1;
+	TableRow tr[];
+	LinearLayout cell[][];
+	int matrix[][];// save state of squares, 0 is black square, and from 1 to 9
+					// for available square
+
+	// ---------------
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_play);
+		// gets intent of itself
+		Intent myself = getIntent();
+		// gets level of previous intent
+		level = myself.getStringExtra("level");
+		// size of screen
+		DisplayMetrics displaymetrics = new DisplayMetrics();
+		getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
+		int height = displaymetrics.heightPixels;
+		int width = displaymetrics.widthPixels;
+
+		Log.e("Here is level and size of screen:", level + "|" + height + "|"
+				+ width);
+		int min = width;
+		// min is the size pixel of table to fit with the screen
+		if (min > height) {
+			min = height;
+		}
+		if (min > 10) {
+			min -= 10;
+		}
+		// level describer dimension of game: 0.0 => tableSize=4x4, 1.0 =>
+		// 5x5...
+		// switch : create table empty
+		switch (level) {
+		case "0.0":
+		case "0.5":
+			tableSize = 4;
+			// create TableLayout for TableRows
+			tl1 = new TableLayout(this);
+
+			llp1 = new TableRow.LayoutParams(LayoutParams.WRAP_CONTENT,
+					LayoutParams.WRAP_CONTENT);
+			llp1.setMargins(2, 2, 2, 2);// 2px margin (duo`ng ke?)
+
+			tl1.setLayoutParams(new TableRow.LayoutParams(
+					TableRow.LayoutParams.WRAP_CONTENT,
+					TableRow.LayoutParams.WRAP_CONTENT));
+			// tl1.setStretchAllColumns(true);
+			tr = new TableRow[tableSize];
+			text = new TextView[tableSize][tableSize];
+			cell = new LinearLayout[tableSize][tableSize];
+			for (int i = 0; i < tableSize; i++) {
+				tr[i] = new TableRow(this);
+				// set bgcolor for table row
+				tr[i].setBackgroundColor(Color.DKGRAY);
+				// Border between rows
+				tr[i].setPadding(0, 0, 0, 2);
+				// tr will wrap around contents
+				tr[i].setLayoutParams(new LayoutParams(
+						LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
+				for (int j = 0; j < tableSize; j++) {
+					cell[i][j] = new LinearLayout(this);
+					text[i][j] = new TextView(this);
+					text[i][j].setText("");
+					text[i][j].setPadding(0, 0, 4, 3);
+					text[i][j].setGravity(Gravity.CENTER);
+					// space between table and screen
+					text[i][j].setLayoutParams(new LayoutParams(min
+							/ (tableSize + 2), min / (tableSize + 2)));
+					cell[i][j].addView(text[i][j]);
+					cell[i][j].setBackgroundColor(Color.WHITE);
+					cell[i][j].setLayoutParams(llp1);
+					tr[i].addView(cell[i][j]);
+				}
+				tl1.addView(tr[i]);
+			}
+			// show layout to the screen:
+			setContentView(tl1);
+			break;
+		case "1.0":
+		case "1.5":
+			tableSize = 5;
+			// create TableLayout for TableRows
+			tl1 = new TableLayout(this);
+
+			llp1 = new TableRow.LayoutParams(LayoutParams.WRAP_CONTENT,
+					LayoutParams.WRAP_CONTENT);
+			llp1.setMargins(2, 2, 2, 2);// 2px margin (duo`ng ke?)
+
+			tl1.setLayoutParams(new TableRow.LayoutParams(
+					TableRow.LayoutParams.WRAP_CONTENT,
+					TableRow.LayoutParams.WRAP_CONTENT));
+			// tl1.setStretchAllColumns(true);
+			tr = new TableRow[tableSize];
+			text = new TextView[tableSize][tableSize];
+			cell = new LinearLayout[tableSize][tableSize];
+			for (int i = 0; i < tableSize; i++) {
+				tr[i] = new TableRow(this);
+				// set bgcolor for table row
+				tr[i].setBackgroundColor(Color.DKGRAY);
+				// Border between rows
+				tr[i].setPadding(0, 0, 0, 2);
+				// tr will wrap around contents
+				tr[i].setLayoutParams(new LayoutParams(
+						LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
+				for (int j = 0; j < tableSize; j++) {
+					cell[i][j] = new LinearLayout(this);
+					text[i][j] = new TextView(this);
+					text[i][j].setText("");
+					text[i][j].setPadding(0, 0, 4, 3);
+					text[i][j].setGravity(Gravity.CENTER);
+					// space between table and screen
+					text[i][j].setLayoutParams(new LayoutParams(min
+							/ (tableSize + 2), min / (tableSize + 2)));
+					cell[i][j].addView(text[i][j]);
+					cell[i][j].setBackgroundColor(Color.WHITE);
+					cell[i][j].setLayoutParams(llp1);
+					tr[i].addView(cell[i][j]);
+				}
+				tl1.addView(tr[i]);
+			}
+			setContentView(tl1);
+			break;
+		case "2.0":
+		case "2.5":
+			tableSize = 6;
+			// create TableLayout for TableRows
+			tl1 = new TableLayout(this);
+
+			llp1 = new TableRow.LayoutParams(LayoutParams.WRAP_CONTENT,
+					LayoutParams.WRAP_CONTENT);
+			llp1.setMargins(2, 2, 2, 2);// 2px margin (duo`ng ke?)
+
+			tl1.setLayoutParams(new TableRow.LayoutParams(
+					TableRow.LayoutParams.WRAP_CONTENT,
+					TableRow.LayoutParams.WRAP_CONTENT));
+			// tl1.setStretchAllColumns(true);
+			tr = new TableRow[tableSize];
+			text = new TextView[tableSize][tableSize];
+			cell = new LinearLayout[tableSize][tableSize];
+			for (int i = 0; i < tableSize; i++) {
+				tr[i] = new TableRow(this);
+				// set bgcolor for table row
+				tr[i].setBackgroundColor(Color.DKGRAY);
+				// Border between rows
+				tr[i].setPadding(0, 0, 0, 2);
+				// tr will wrap around contents
+				tr[i].setLayoutParams(new LayoutParams(
+						LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
+				for (int j = 0; j < tableSize; j++) {
+					cell[i][j] = new LinearLayout(this);
+					text[i][j] = new TextView(this);
+					text[i][j].setText("");
+					text[i][j].setPadding(0, 0, 4, 3);
+					text[i][j].setGravity(Gravity.CENTER);
+					// space between table and screen
+					text[i][j].setLayoutParams(new LayoutParams(min
+							/ (tableSize + 2), min / (tableSize + 2)));
+					cell[i][j].addView(text[i][j]);
+					cell[i][j].setBackgroundColor(Color.WHITE);
+					cell[i][j].setLayoutParams(llp1);
+					tr[i].addView(cell[i][j]);
+				}
+				tl1.addView(tr[i]);
+			}
+			setContentView(tl1);
+			break;
+		case "3.0":
+		case "3.5":
+			tableSize = 7;
+			// create TableLayout for TableRows
+			tl1 = new TableLayout(this);
+
+			llp1 = new TableRow.LayoutParams(LayoutParams.WRAP_CONTENT,
+					LayoutParams.WRAP_CONTENT);
+			llp1.setMargins(2, 2, 2, 2);// 2px margin (duo`ng ke?)
+
+			tl1.setLayoutParams(new TableRow.LayoutParams(
+					TableRow.LayoutParams.WRAP_CONTENT,
+					TableRow.LayoutParams.WRAP_CONTENT));
+			// tl1.setStretchAllColumns(true);
+			tr = new TableRow[tableSize];
+			text = new TextView[tableSize][tableSize];
+			cell = new LinearLayout[tableSize][tableSize];
+			for (int i = 0; i < tableSize; i++) {
+				tr[i] = new TableRow(this);
+				// set bgcolor for table row
+				tr[i].setBackgroundColor(Color.DKGRAY);
+				// Border between rows
+				tr[i].setPadding(0, 0, 0, 2);
+				// tr will wrap around contents
+				tr[i].setLayoutParams(new LayoutParams(
+						LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
+				for (int j = 0; j < tableSize; j++) {
+					cell[i][j] = new LinearLayout(this);
+					text[i][j] = new TextView(this);
+					text[i][j].setText("");
+					text[i][j].setPadding(0, 0, 4, 3);
+					text[i][j].setGravity(Gravity.CENTER);
+					// space between table and screen
+					text[i][j].setLayoutParams(new LayoutParams(min
+							/ (tableSize + 2), min / (tableSize + 2)));
+					cell[i][j].addView(text[i][j]);
+					cell[i][j].setBackgroundColor(Color.WHITE);
+					cell[i][j].setLayoutParams(llp1);
+					tr[i].addView(cell[i][j]);
+				}
+				tl1.addView(tr[i]);
+			}
+			setContentView(tl1);
+			break;
+		case "4.0":
+		case "4.5":
+			tableSize = 8;
+			// create TableLayout for TableRows
+			tl1 = new TableLayout(this);
+
+			llp1 = new TableRow.LayoutParams(LayoutParams.WRAP_CONTENT,
+					LayoutParams.WRAP_CONTENT);
+			llp1.setMargins(2, 2, 2, 2);// 2px margin (duo`ng ke?)
+
+			tl1.setLayoutParams(new TableRow.LayoutParams(
+					TableRow.LayoutParams.WRAP_CONTENT,
+					TableRow.LayoutParams.WRAP_CONTENT));
+			// tl1.setStretchAllColumns(true);
+			tr = new TableRow[tableSize];
+			text = new TextView[tableSize][tableSize];
+			cell = new LinearLayout[tableSize][tableSize];
+			for (int i = 0; i < tableSize; i++) {
+				tr[i] = new TableRow(this);
+				// set bgcolor for table row
+				tr[i].setBackgroundColor(Color.DKGRAY);
+				// Border between rows
+				tr[i].setPadding(0, 0, 0, 2);
+				// tr will wrap around contents
+				tr[i].setLayoutParams(new LayoutParams(
+						LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
+				for (int j = 0; j < tableSize; j++) {
+					cell[i][j] = new LinearLayout(this);
+					text[i][j] = new TextView(this);
+					text[i][j].setText("");
+					text[i][j].setPadding(0, 0, 4, 3);
+					text[i][j].setGravity(Gravity.CENTER);
+					// space between table and screen
+					text[i][j].setLayoutParams(new LayoutParams(min
+							/ (tableSize + 2), min / (tableSize + 2)));
+					cell[i][j].addView(text[i][j]);
+					cell[i][j].setBackgroundColor(Color.WHITE);
+					cell[i][j].setLayoutParams(llp1);
+					tr[i].addView(cell[i][j]);
+				}
+				tl1.addView(tr[i]);
+			}
+			setContentView(tl1);
+			break;
+		case "5.0":
+			tableSize = 9;
+			// create TableLayout for TableRows
+			tl1 = new TableLayout(this);
+
+			llp1 = new TableRow.LayoutParams(LayoutParams.WRAP_CONTENT,
+					LayoutParams.WRAP_CONTENT);
+			llp1.setMargins(2, 2, 2, 2);// 2px margin (duo`ng ke?)
+
+			tl1.setLayoutParams(new TableRow.LayoutParams(
+					TableRow.LayoutParams.WRAP_CONTENT,
+					TableRow.LayoutParams.WRAP_CONTENT));
+			// tl1.setStretchAllColumns(true);
+			tr = new TableRow[tableSize];
+			text = new TextView[tableSize][tableSize];
+			cell = new LinearLayout[tableSize][tableSize];
+			for (int i = 0; i < tableSize; i++) {
+				tr[i] = new TableRow(this);
+				// set bgcolor for table row
+				tr[i].setBackgroundColor(Color.DKGRAY);
+				// Border between rows
+				tr[i].setPadding(0, 0, 0, 2);
+				// tr will wrap around contents
+				tr[i].setLayoutParams(new LayoutParams(
+						LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
+				for (int j = 0; j < tableSize; j++) {
+					cell[i][j] = new LinearLayout(this);
+					text[i][j] = new TextView(this);
+					text[i][j].setText("");
+					text[i][j].setPadding(0, 0, 4, 3);
+					text[i][j].setGravity(Gravity.CENTER);
+					// space between table and screen
+					text[i][j].setLayoutParams(new LayoutParams(min
+							/ (tableSize + 2), min / (tableSize + 2)));
+					cell[i][j].addView(text[i][j]);
+					cell[i][j].setBackgroundColor(Color.WHITE);
+					cell[i][j].setLayoutParams(llp1);
+					tr[i].addView(cell[i][j]);
+				}
+				tl1.addView(tr[i]);
+			}
+			setContentView(tl1);
+			break;
+		default:
+		}
+		// ------------------------------------------------------------------------
+		matrix = new int[tableSize][tableSize];
+		// Making number-lines and set color of squares
+		Log.e("Level and size:", "" + level + "|" + tableSize);
+		// NumOne for insert to table, NumTwo for insert black squares
+		int theNumberTwo = 2;
+		randomize rd = new randomize();
+		for (int i = 0; i < tableSize; i++) {
+			rd.setRangeValue(2, 7);
+			theNumberTwo = rd.getRandomNumber();
+			for (int j = 0; j < tableSize; j++) {
+				if ((i + j) % theNumberTwo == 0) {
+					cell[i][j].setBackgroundColor(Color.BLACK);
+					matrix[i][j] = 0;
+					// Log.e("numberTwo:", theNumberTwo + "");
+				}
+			}
+		}
+		int counter = 0, temp[][] = new int[tableSize][tableSize];
+
+		for (int j = 0; j < tableSize; j++) {
+			rd.setRangeValue(2, 15);
+			theNumberTwo = rd.getRandomNumber();
+			for (int i = 0; i < tableSize; i++) {
+				rd.setRangeValue(1, 9);
+				// random crossnumber
+				matrix[i][j] = rd.getRandomNumber();
+				if ((i + j) % theNumberTwo == 0) {
+					cell[i][j].setBackgroundColor(Color.BLACK);
+					matrix[i][j] = 0;
+					// Log.e("numberTwo:", theNumberTwo + "");
+				}
+				if (matrix[i][j] != 0) {
+					text[i][j].setText("" + matrix[i][j]);
+				}
+			}
+		}
+
+		// ----- fill white square not true to black---------------
+		// -----scan horizontal
+		// TODO
+		for(int i=0; i<tableSize; i++){
+			counter=0;
+			for (int j = 0; j < tableSize; j++) {
+				if (((ColorDrawable) cell[i][j].getBackground()).getColor() == Color.WHITE
+						&&matrix[i][j]>0){
+					counter++;// white square
+					temp[i][j]=matrix[i][j];
+					Log.e("W_counter:",""+counter);
+					if(j==tableSize-1){
+						if(counter<2){
+							temp[i][j] = -1;
+							text[i][j].setText("X");
+							Log.e("B_counter:",""+counter);// Bien
+							counter=0;
+						}
+					}
+				}else if (((ColorDrawable) cell[i][j].getBackground()).getColor() == Color.BLACK
+							||matrix[i][j]==0){
+						temp[i][j]=0;
+						if(j-1>0){
+							if(counter<2){
+								temp[i][j-1]=-1;
+								text[i][j-1].setText("X");
+							}
+						}
+						Log.e("D_counter:",""+counter);// Den
+						counter=0;
+					}
+				Log.e("E_counter:",""+counter);// End
+				}
+			
+		}
+		// ----- scan vertical
+		// TODO
+		for (int j = 0; j < tableSize; j++) {
+			counter = 0;
+			for (int i = 0; i < tableSize; i++) {
+				if (matrix[i][j] == 0) {
+					temp[i][j] = 0;
+					if (i - 1 > 0 && counter < 2) {
+						temp[i - 1][j] = -1;
+						text[i - 1][j].setText("Y" + text[i - 1][j].getText());
+					}
+					counter = 0;
+				} else {
+					temp[i][j] = matrix[i][j];
+					counter++;
+				}
+				if (i == tableSize - 1 && counter < 2) {
+					temp[i][j] = -1;
+					text[i][j].setText("Y" + text[i - 1][j].getText());
+					counter = 0;
+				}
+			}
+		}
+		// -----
+		for (int i = 0; i < tableSize; i++) {
+			for (int j = 0; j < tableSize; j++) {
+				if (((ColorDrawable) cell[i][j].getBackground()).getColor() == Color.BLACK) {
+					matrix[i][j] = 0;
+					text[i][j].setText("");
+
+				}
+				/*
+				 * if(temp[i][j]<-1){ matrix[i][j] = 0; text[i][j].setText("");
+				 * cell[i][j].setBackgroundColor(Color.BLACK); }
+				 */
+			}
+		}
+		// -------------------------------------------------
+	}
+}

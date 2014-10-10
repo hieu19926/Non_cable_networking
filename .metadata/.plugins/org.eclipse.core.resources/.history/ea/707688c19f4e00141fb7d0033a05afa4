@@ -1,0 +1,16 @@
+package com.hieu.supporter;
+
+import java.util.Random;
+
+public class randomize {
+	private int ran;
+	public randomize() {
+		ran=1;
+	}
+	public int getRandomNumber(){
+		Random rand = new Random();
+		ran = rand.nextInt(50)+1;
+		//50 is the maximum and the 1 is our minimum 
+		return ran;
+	}
+}

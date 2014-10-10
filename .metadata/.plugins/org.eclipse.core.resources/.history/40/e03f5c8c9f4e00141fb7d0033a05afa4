@@ -1,0 +1,11 @@
+package com.hieu.supporter;
+
+public class randomize {
+	private int rand;
+	public randomize() {
+		rand=1;
+	}
+	public int getRandomNumber(){
+		
+	}
+}

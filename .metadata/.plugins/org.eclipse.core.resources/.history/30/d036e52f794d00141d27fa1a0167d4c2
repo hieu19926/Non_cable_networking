@@ -1,0 +1,50 @@
+package com.hieu.nansuke;
+
+import android.app.Activity;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
+import android.widget.RatingBar;
+import android.widget.RatingBar.OnRatingBarChangeListener;
+
+public class MainActivity extends Activity {
+	
+	//variables:
+	RatingBar rat;
+	private float level = 0;
+	Button btOk;
+	//---------------
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_main);
+		rat = (RatingBar)findViewById(R.id.ratingBar1);// choose level with rating
+		rat.setOnRatingBarChangeListener(new OnRatingBarChangeListener() {
+			
+			public void onRatingChanged(RatingBar ratingBar, float rating,
+					boolean fromUser) {
+				// TODO Auto-generated method stub
+				Log.e("rating:", rat.getRating()+"");
+				level = rat.getRating();
+			}
+		});
+		btOk = (Button)findViewById(R.id.button1);
+		btOk.setOnClickListener(new OnClickListener() {
+			
+			public void onClick(View v) {
+				// OK to create game with level
+				switch (level) {
+				case 0:
+					
+					break;
+
+				default:
+					break;
+				}
+			}
+		});
+	}
+	
+}
