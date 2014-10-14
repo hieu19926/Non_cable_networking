@@ -11,3 +11,5 @@
 1412658857416	Rename local variable 'llp'
 1412670339975	Rename local variable 'tr'
 1412670352020	Rename local variable 'cell'
+1412961132586	Delete element
+1412965135951	Rename local variable 'timeOutReject'

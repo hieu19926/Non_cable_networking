@@ -1,0 +1,13 @@
+package com.hieu.supporter;
+
+import android.R.bool;
+
+public class searchSquareToFill {
+	private boolean color;
+	private byte axes;
+	public searchSquareToFill() {
+		// TODO Auto-generated constructor stub
+		color=false;//default is white - true (black is true)
+		axes=1;// 1 is above, 2 is right, 3 - bottom, 4 - left
+	}
+}

@@ -1,0 +1,40 @@
+package com.pirmary.http_request;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLConnection;
+
+public class HttpRequestContents {
+	//Variables
+	private String url=null;
+	private InputStream response=null;
+	
+	public HttpRequestContents() {
+		// TODO Auto-generated constructor stub
+	}
+	public  HttpRequestContents(String url) throws IOException {
+		this.url=url;
+		response = OpenHttpConnection(url);
+	}
+	private InputStream OpenHttpConnection(String strURL) throws IOException {
+		URLConnection conn = null;
+		InputStream inputStream = null;
+		URL url = new URL(strURL);
+		conn = url.openConnection();
+		HttpURLConnection httpConn = (HttpURLConnection) conn;
+		httpConn.setRequestMethod("GET");
+		httpConn.connect();
+		if (httpConn.getResponseCode() == HttpURLConnection.HTTP_OK) {
+			inputStream = httpConn.getInputStream();
+		}
+		return inputStream;
+	}
+	public void setUrl(String url){
+		this.url = url;
+	}
+	public String getUrl(){
+		return this.url;
+	}
+}

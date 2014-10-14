@@ -1,0 +1,5 @@
+package com.pirmary.http_request;
+
+public class HttpRequestContents {
+
+}

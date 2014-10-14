@@ -1,0 +1,43 @@
+package com.primary.secondgraders;
+
+import java.io.InputStream;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import android.app.Activity;
+import android.os.Bundle;
+import android.util.Log;
+import android.widget.TextView;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.primary.jsonstorage.CauHoi;
+
+public class JsonTest extends Activity {
+
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.test_json);
+		final TextView cauHoi = (TextView) findViewById(R.id.TextViewcauhoi);
+		final TextView traLoiA = (TextView) findViewById(R.id.textViewTLA);
+		final TextView traLoiB = (TextView) findViewById(R.id.TextViewTLB);
+		final TextView traLoiC = (TextView) findViewById(R.id.TextViewTLC);
+		final TextView traLoiD = (TextView) findViewById(R.id.TextViewTLD);
+		CauHoi cau1 = new CauHoi("Cau1: 1 + x = 3, x = ?", "bang 1", "bang 2",
+				"bang 3", "bang 4", "2");
+		Gson gs = new GsonBuilder().excludeFieldsWithoutExposeAnnotation()
+				.create();
+		String chuoiJson = gs.toJson(cau1);
+		try {
+			JSONObject js = new JSONObject(chuoiJson);
+			String ch = "";
+			ch = js.getString("question");
+			cauHoi.setText("JSON_string: " + ch);
+		} catch (JSONException e) {
+			Log.e("ERR", "JSONERR");
+		}
+	}
+
+}

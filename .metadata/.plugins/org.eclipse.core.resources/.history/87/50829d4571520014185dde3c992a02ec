@@ -1,0 +1,10 @@
+package JsonObjSave;
+
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
+
+
+public class CauHoi {
+	@Expose
+	private String cauhoi,tla,tlb,tlc,tld;
+}

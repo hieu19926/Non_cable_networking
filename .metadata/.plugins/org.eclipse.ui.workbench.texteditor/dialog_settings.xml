@@ -2,8 +2,8 @@
 <section name="Workbench">
 	<section name="org.eclipse.ui.texteditor.FindReplaceDialog_dialogBounds">
 		<item value="257" key="DIALOG_WIDTH"/>
-		<item value="137" key="DIALOG_Y_ORIGIN"/>
-		<item value="650" key="DIALOG_X_ORIGIN"/>
+		<item value="59" key="DIALOG_Y_ORIGIN"/>
+		<item value="1039" key="DIALOG_X_ORIGIN"/>
 		<item value="380" key="DIALOG_HEIGHT"/>
 		<item value="1|Segoe UI|9.0|0|WINDOWS|1|-12|0|0|0|400|0|0|0|1|0|0|0|0|Segoe UI" key="DIALOG_FONT_NAME"/>
 	</section>
@@ -13,15 +13,22 @@
 		<item value="false" key="isRegEx"/>
 		<item value="false" key="incremental"/>
 		<item value="false" key="wholeword"/>
-		<item value="Log" key="selection"/>
+		<item value="" key="selection"/>
 		<list key="findhistory">
-			<item value="matrix[i][j] == 0"/>
-			<item value="Log"/>
-			<item value="setText(&quot;0&quot;)"/>
-			<item value="package com.hieu.nansuke;"/>
-			<item value="listTr"/>
+			<item value="try"/>
+			<item value="json"/>
+			<item value="&quot;Y&quot;"/>
+			<item value="&quot;X&quot;"/>
+			<item value="Black Squares:"/>
+			<item value="D_counter:"/>
+			<item value="tryToLoop++;"/>
+			<item value="timeO"/>
 		</list>
 		<list key="replacehistory">
+			<item value="[m"/>
+			<item value="[k"/>
+			<item value="m"/>
+			<item value="k"/>
 			<item value="setText(&quot;&quot;)"/>
 			<item value="TR"/>
 		</list>

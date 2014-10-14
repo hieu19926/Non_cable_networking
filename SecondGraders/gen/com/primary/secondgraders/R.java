@@ -28,9 +28,6 @@ public final class R {
     }
     public static final class id {
         public static final int RelativeLayout1=0x7f080002;
-        public static final int TextView01=0x7f08000f;
-        public static final int TextView02=0x7f08000e;
-        public static final int TextView03=0x7f08000d;
         public static final int TextView04=0x7f08000c;
         public static final int TextView05=0x7f08000b;
         public static final int TextView06=0x7f08000a;
@@ -40,17 +37,29 @@ public final class R {
         public static final int TextView10=0x7f080006;
         public static final int TextView11=0x7f080005;
         public static final int TextView12=0x7f080004;
-        public static final int action_settings=0x7f080013;
+        public static final int TextViewTLB=0x7f08000f;
+        public static final int TextViewTLC=0x7f08000e;
+        public static final int TextViewTLD=0x7f08000d;
+        public static final int TextViewcauhoi=0x7f080011;
+        public static final int action_settings=0x7f08001b;
+        public static final int get_html=0x7f080013;
         public static final int imageView1=0x7f080001;
+        public static final int noidung=0x7f080018;
         public static final int progressBar1=0x7f080000;
+        public static final int radioButton1=0x7f080015;
+        public static final int radioButton2=0x7f080014;
+        public static final int radioButton3=0x7f080016;
+        public static final int radioButton4=0x7f080017;
         public static final int scrollView1=0x7f080003;
-        public static final int textView1=0x7f080010;
-        public static final int textView2=0x7f080011;
+        public static final int textView1=0x7f08001a;
         public static final int textView3=0x7f080012;
+        public static final int textViewTLA=0x7f080010;
+        public static final int url=0x7f080019;
     }
     public static final class layout {
         public static final int activity_main=0x7f030000;
         public static final int mucluc=0x7f030001;
+        public static final int test_json=0x7f030002;
     }
     public static final class menu {
         public static final int main=0x7f070000;

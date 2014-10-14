@@ -1,0 +1,19 @@
+package JsonObjSave;
+
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
+
+
+public class CauHoi {
+	@Expose
+	@SerializedName("question")
+	private String cauhoi;
+	@SerializedName("answer_a")
+	private String tla;
+	@SerializedName("answer_b")
+	private String tlb;
+	@SerializedName("answer_c")
+	private String tlc;
+	@SerializedName("answer_d")
+	private String tld;
+}

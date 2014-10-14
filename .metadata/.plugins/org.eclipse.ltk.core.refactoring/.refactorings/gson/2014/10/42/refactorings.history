@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Copy 3 elements to &apos;libs&apos;&#x0D;&#x0A;- Original project: &apos;gson&apos;&#x0D;&#x0A;- Destination element: &apos;libs&apos;&#x0D;&#x0A;- Original elements:&#x0D;&#x0A;     gson-2.2.4-sources.jar&#x0D;&#x0A;     gson-2.2.4-javadoc.jar&#x0D;&#x0A;     gson-2.2.4.jar" description="Copy files" element1="libs/gson-2.2.4-sources.jar" element2="libs/gson-2.2.4-javadoc.jar" element3="libs/gson-2.2.4.jar" files="3" flags="589830" folders="0" id="org.eclipse.jdt.ui.copy" policy="org.eclipse.jdt.ui.copyResources" stamp="1413160589383" target="/SecondGraders/libs" units="0" version="1.0"/>
+</session>
