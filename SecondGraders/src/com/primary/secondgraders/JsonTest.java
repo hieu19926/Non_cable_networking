@@ -10,6 +10,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.util.EntityUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -55,9 +56,22 @@ public class JsonTest extends Activity {
 							.permitAll().build();
 					StrictMode.setThreadPolicy(policy);
 					String res = getStringContent(url_get);
-					Log.e("respose:", Integer.toString(res.length()));
+					//int len = res.length();
+					//byte byt[] = new byte[len];
+					//byt=res.getBytes("UTF8");
+					//Log.e("respose:", byt.toString());
 					noidung.setText(res);
+					JSONObject json = new JSONObject(res);
+					JSONObject jsonPost = json.getJSONObject("post");
+					cauHoi.setText("Câu "+jsonPost.getString("number")+":  "+jsonPost.getString("question"));
+					traLoiA.setText(jsonPost.getString("answer_a"));
+					traLoiB.setText(jsonPost.getString("answer_b"));
+					traLoiC.setText(jsonPost.getString("answer_c"));
+					traLoiD.setText(jsonPost.getString("answer_d"));
 				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (Throwable e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
@@ -65,11 +79,9 @@ public class JsonTest extends Activity {
 			}
 		});
 		
-		noidung.setFocusable(false);
-		CauHoi cau1 = new CauHoi("Cau1: 1 + x = 3, x = ?", "bang 1", "bang 2",
-				"bang 3", "bang 4", "2");
-		Gson gs = new GsonBuilder().excludeFieldsWithoutExposeAnnotation()
-				.create();
+		/*noidung.setFocusable(false);
+		CauHoi cau1 = new CauHoi("1","Cau1: 1 + x = 3, x = ?", "bang 1", "bang 2","bang 3", "bang 4", "2");
+		Gson gs = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
 		String chuoiJson = gs.toJson(cau1);
 		try {
 			JSONObject js = new JSONObject(chuoiJson);
@@ -78,7 +90,7 @@ public class JsonTest extends Activity {
 			cauHoi.setText("JSON_string: " + ch);
 		} catch (JSONException e) {
 			Log.e("ERR", "JSONERR");
-		}
+		}*/
 	}
 
 	// Ham lay tren mang:
@@ -109,7 +121,6 @@ public class JsonTest extends Activity {
 			buf.close();
 			ips.close();
 			return sb.toString();
-
 		} finally {
 			// any cleanup code...
 		}

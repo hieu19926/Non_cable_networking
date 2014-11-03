@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Change Layout" description="Change Layout" file="/Nansuke/res/layout/activity_play.xml" flags="6" flatten="true" id="com.android.ide.eclipse.adt.refactoring.convert" proj="/Nansuke" sel-end="289" sel-start="40" stamp="1413999783520" type="android.widget.RelativeLayout"/>
+</session>

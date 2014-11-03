@@ -1,0 +1,1450 @@
+package com.hieu.nansuke;
+
+import java.util.LinkedList;
+import java.util.Stack;
+
+import com.hieu.supporter.NumberLine;
+import com.hieu.supporter.randomize;
+
+import android.app.Activity;
+import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Rect;
+import android.graphics.drawable.ColorDrawable;
+import android.os.Bundle;
+import android.os.CountDownTimer;
+import android.util.DisplayMetrics;
+import android.util.Log;
+import android.view.Gravity;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.ViewTreeObserver;
+import android.view.ViewTreeObserver.OnGlobalLayoutListener;
+import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
+import android.widget.TableLayout;
+import android.widget.TableRow;
+import android.widget.TableRow.LayoutParams;
+import android.widget.TextView;
+
+public class PlayActivity extends Activity {
+
+	// TODO variables:
+	final int ID_TABLE_LAYOUT = 10069;
+	final int ID_TIMER = 10070;
+	final int ID_UNDO_BUTTON = 10071;
+	final int ID_PREFIX_SQUARE_NUMBER = 10072;
+	final int ID_PREFIX_ANSWER_LINE = 10073;
+	String level = "0";
+	TextView text[][];
+	int tableSize = 4;
+	TableLayout tl1;
+	TableRow.LayoutParams llp1;
+	TableRow tr[];
+	LinearLayout cell[][];
+	int matrix[][];// save state of squares, 0 is black square, and from 1 to 9
+					// for available square
+	int squareLimited;
+	int constanPartitionSquare;// for each level, this constant will help for
+								// draw black square
+	RelativeLayout.LayoutParams param_tayBac = new RelativeLayout.LayoutParams(
+			LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+	RelativeLayout.LayoutParams param_dongBac = new RelativeLayout.LayoutParams(
+			LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+	RelativeLayout.LayoutParams under_table = new RelativeLayout.LayoutParams(
+			LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+	RelativeLayout.LayoutParams under_params = new RelativeLayout.LayoutParams(
+			LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+	RelativeLayout rl;
+	String timePlaying = "3'00";
+	private TextView tx;
+	int[] axis;// tmp save axis
+	int[] axisLast;
+	TextView[] listAnswer;
+	int mixedSize;
+	LinkedList<String> mixed;
+	int height;
+	int width;
+	LinkedList<RelativeLayout.LayoutParams> newLy = new LinkedList<RelativeLayout.LayoutParams>();
+	int tmp[][];
+	int state[][];
+	int countTouchToTable = 0;
+	Stack<TextView> answerChooseen = new Stack<TextView>();
+	Stack<View> tableClicked = new Stack<View>();
+	String choosingAnswer = "";
+	Button undoBt;
+	Stack<Integer> idChooseens = new Stack<Integer>();
+	Stack<Integer[][]> axisStackUndo = new Stack<Integer[][]>();
+	Integer[][] coordinate = new Integer[2][2];
+
+	// ---------------
+
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_play);
+
+		param_tayBac.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
+		param_tayBac.addRule(RelativeLayout.ALIGN_PARENT_TOP);
+
+		param_dongBac.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+		param_dongBac.addRule(RelativeLayout.ALIGN_PARENT_TOP);
+
+		rl = (RelativeLayout) findViewById(R.id.RelativeLayout1);
+
+		undoBt = new Button(this);
+		undoBt.setText("Undo");
+		undoBt.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View arg0) {
+				// TODO Re draw answers - undo action
+				if (!idChooseens.isEmpty()) {
+					TextView undo = (TextView) findViewById(idChooseens.pop());
+					undo.setFocusable(true);
+					undo.setTextColor(Color.BLACK);
+				}
+				axis = new int[2];
+				axisLast = new int[2];
+
+				if (!axisStackUndo.isEmpty())
+					coordinate = axisStackUndo.pop();
+				axis[0] = coordinate[0][0];
+				axis[1] = coordinate[0][1];
+				axisLast[0] = coordinate[1][0];
+				axisLast[1] = coordinate[1][1];
+				undoAndRemoveSquare();
+			}
+
+		});
+		// gets intent of itself
+		Intent myself = getIntent();
+		// gets level of previous intent
+		level = myself.getStringExtra("level");
+		// size of screen
+		DisplayMetrics displaymetrics = new DisplayMetrics();
+		getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
+		height = displaymetrics.heightPixels;
+		width = displaymetrics.widthPixels;
+
+		Log.e("Here is level and size of screen:", level + "|" + height + "|"
+				+ width);
+
+		int min = width;
+		// min is the size pixel of table to fit with the screen
+		if (min > height) {
+			min = height;
+		}
+		if (min > 10) {
+			min -= 10;
+		}
+		// level describer dimension of game: 0.0 => tableSize=4x4, 1.0 =>
+		// 5x5...
+
+		// switch : create table empty
+		switch (level) {
+		case "0.0":
+		case "0.5":
+			tableSize = 4;
+			squareLimited = 4;
+			constanPartitionSquare = 1;
+			// create TableLayout for TableRows
+			tl1 = new TableLayout(this);
+
+			llp1 = new TableRow.LayoutParams(LayoutParams.WRAP_CONTENT,
+					LayoutParams.WRAP_CONTENT);
+			llp1.setMargins(2, 2, 2, 2);// 2px margin (duo`ng ke?)
+
+			tl1.setLayoutParams(new TableRow.LayoutParams(
+					TableRow.LayoutParams.WRAP_CONTENT,
+					TableRow.LayoutParams.WRAP_CONTENT));
+			// tl1.setStretchAllColumns(true);
+			tr = new TableRow[tableSize];
+			text = new TextView[tableSize][tableSize];
+			cell = new LinearLayout[tableSize][tableSize];
+			for (int i = 0; i < tableSize; i++) {
+				tr[i] = new TableRow(this);
+				// set bgcolor for table row
+				tr[i].setBackgroundColor(Color.DKGRAY);
+				// Border between rows
+				tr[i].setPadding(0, 0, 0, 2);
+				// tr will wrap around contents
+				tr[i].setLayoutParams(new LayoutParams(
+						LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
+				for (int j = 0; j < tableSize; j++) {
+					cell[i][j] = new LinearLayout(this);
+					text[i][j] = new TextView(this);
+					text[i][j].setId(ID_PREFIX_SQUARE_NUMBER
+							+ (i * tableSize + j));
+					text[i][j].setText("");
+					text[i][j].setPadding(0, 0, 4, 3);
+					text[i][j].setGravity(Gravity.CENTER);
+					// space between table and screen
+					text[i][j].setLayoutParams(new LayoutParams(min
+							/ (tableSize + 2), min / (tableSize + 2)));
+					cell[i][j].addView(text[i][j]);
+					cell[i][j].setBackgroundColor(Color.WHITE);
+					cell[i][j].setLayoutParams(llp1);
+					tr[i].addView(cell[i][j]);
+				}
+				tl1.addView(tr[i]);
+			}
+			// show layout to the screen:
+			// setContentView(tl1);
+			break;
+		case "1.0":
+		case "1.5":
+			tableSize = 5;
+			squareLimited = 7;
+			constanPartitionSquare = 2;
+			// create TableLayout for TableRows
+			tl1 = new TableLayout(this);
+
+			llp1 = new TableRow.LayoutParams(LayoutParams.WRAP_CONTENT,
+					LayoutParams.WRAP_CONTENT);
+			llp1.setMargins(2, 2, 2, 2);// 2px margin (duo`ng ke?)
+
+			tl1.setLayoutParams(new TableRow.LayoutParams(
+					TableRow.LayoutParams.WRAP_CONTENT,
+					TableRow.LayoutParams.WRAP_CONTENT));
+			// tl1.setStretchAllColumns(true);
+			tr = new TableRow[tableSize];
+			text = new TextView[tableSize][tableSize];
+			cell = new LinearLayout[tableSize][tableSize];
+			for (int i = 0; i < tableSize; i++) {
+				tr[i] = new TableRow(this);
+				// set bgcolor for table row
+				tr[i].setBackgroundColor(Color.DKGRAY);
+				// Border between rows
+				tr[i].setPadding(0, 0, 0, 2);
+				// tr will wrap around contents
+				tr[i].setLayoutParams(new LayoutParams(
+						LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
+				for (int j = 0; j < tableSize; j++) {
+					cell[i][j] = new LinearLayout(this);
+					text[i][j] = new TextView(this);
+					text[i][j].setText("");
+					text[i][j].setPadding(0, 0, 4, 3);
+					text[i][j].setGravity(Gravity.CENTER);
+					// space between table and screen
+					text[i][j].setLayoutParams(new LayoutParams(min
+							/ (tableSize + 2), min / (tableSize + 2)));
+					cell[i][j].addView(text[i][j]);
+					cell[i][j].setBackgroundColor(Color.WHITE);
+					cell[i][j].setLayoutParams(llp1);
+					tr[i].addView(cell[i][j]);
+				}
+				tl1.addView(tr[i]);
+			}
+			// setContentView(tl1);
+			break;
+		case "2.0":
+		case "2.5":
+			tableSize = 6;
+			squareLimited = 11;
+			constanPartitionSquare = 2;
+			// create TableLayout for TableRows
+			tl1 = new TableLayout(this);
+
+			llp1 = new TableRow.LayoutParams(LayoutParams.WRAP_CONTENT,
+					LayoutParams.WRAP_CONTENT);
+			llp1.setMargins(2, 2, 2, 2);// 2px margin (duo`ng ke?)
+
+			tl1.setLayoutParams(new TableRow.LayoutParams(
+					TableRow.LayoutParams.WRAP_CONTENT,
+					TableRow.LayoutParams.WRAP_CONTENT));
+			// tl1.setStretchAllColumns(true);
+			tr = new TableRow[tableSize];
+			text = new TextView[tableSize][tableSize];
+			cell = new LinearLayout[tableSize][tableSize];
+			for (int i = 0; i < tableSize; i++) {
+				tr[i] = new TableRow(this);
+				// set bgcolor for table row
+				tr[i].setBackgroundColor(Color.DKGRAY);
+				// Border between rows
+				tr[i].setPadding(0, 0, 0, 2);
+				// tr will wrap around contents
+				tr[i].setLayoutParams(new LayoutParams(
+						LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
+				for (int j = 0; j < tableSize; j++) {
+					cell[i][j] = new LinearLayout(this);
+					text[i][j] = new TextView(this);
+					text[i][j].setText("");
+					text[i][j].setPadding(0, 0, 4, 3);
+					text[i][j].setGravity(Gravity.CENTER);
+					// space between table and screen
+					text[i][j].setLayoutParams(new LayoutParams(min
+							/ (tableSize + 2), min / (tableSize + 2)));
+					cell[i][j].addView(text[i][j]);
+					cell[i][j].setBackgroundColor(Color.WHITE);
+					cell[i][j].setLayoutParams(llp1);
+					tr[i].addView(cell[i][j]);
+				}
+				tl1.addView(tr[i]);
+			}
+			// setContentView(tl1);
+			break;
+		case "3.0":
+		case "3.5":
+			tableSize = 7;
+			squareLimited = 17;
+			constanPartitionSquare = 3;
+			// create TableLayout for TableRows
+			tl1 = new TableLayout(this);
+
+			llp1 = new TableRow.LayoutParams(LayoutParams.WRAP_CONTENT,
+					LayoutParams.WRAP_CONTENT);
+			llp1.setMargins(2, 2, 2, 2);// 2px margin (duo`ng ke?)
+
+			tl1.setLayoutParams(new TableRow.LayoutParams(
+					TableRow.LayoutParams.WRAP_CONTENT,
+					TableRow.LayoutParams.WRAP_CONTENT));
+			// tl1.setStretchAllColumns(true);
+			tr = new TableRow[tableSize];
+			text = new TextView[tableSize][tableSize];
+			cell = new LinearLayout[tableSize][tableSize];
+			for (int i = 0; i < tableSize; i++) {
+				tr[i] = new TableRow(this);
+				// set bgcolor for table row
+				tr[i].setBackgroundColor(Color.DKGRAY);
+				// Border between rows
+				tr[i].setPadding(0, 0, 0, 2);
+				// tr will wrap around contents
+				tr[i].setLayoutParams(new LayoutParams(
+						LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
+				for (int j = 0; j < tableSize; j++) {
+					cell[i][j] = new LinearLayout(this);
+					text[i][j] = new TextView(this);
+					text[i][j].setText("");
+					text[i][j].setPadding(0, 0, 4, 3);
+					text[i][j].setGravity(Gravity.CENTER);
+					// space between table and screen
+					text[i][j].setLayoutParams(new LayoutParams(min
+							/ (tableSize + 2), min / (tableSize + 2)));
+					cell[i][j].addView(text[i][j]);
+					cell[i][j].setBackgroundColor(Color.WHITE);
+					cell[i][j].setLayoutParams(llp1);
+					tr[i].addView(cell[i][j]);
+				}
+				tl1.addView(tr[i]);
+			}
+			// setCTV: da set ctv roi thi ko the add them vao nua ma phai goi
+			// add cua chinh content
+			// view nay
+			// setContentView(tl1);
+			break;
+		case "4.0":
+		case "4.5":
+			tableSize = 8;
+			squareLimited = 19;
+			constanPartitionSquare = 3;
+			// create TableLayout for TableRows
+			tl1 = new TableLayout(this);
+
+			llp1 = new TableRow.LayoutParams(LayoutParams.WRAP_CONTENT,
+					LayoutParams.WRAP_CONTENT);
+			llp1.setMargins(2, 2, 2, 2);// 2px margin (duo`ng ke?)
+
+			tl1.setLayoutParams(new TableRow.LayoutParams(
+					TableRow.LayoutParams.WRAP_CONTENT,
+					TableRow.LayoutParams.WRAP_CONTENT));
+			// tl1.setStretchAllColumns(true);
+			tr = new TableRow[tableSize];
+			text = new TextView[tableSize][tableSize];
+			cell = new LinearLayout[tableSize][tableSize];
+			for (int i = 0; i < tableSize; i++) {
+				tr[i] = new TableRow(this);
+				// set bgcolor for table row
+				tr[i].setBackgroundColor(Color.DKGRAY);
+				// Border between rows
+				tr[i].setPadding(0, 0, 0, 2);
+				// tr will wrap around contents
+				tr[i].setLayoutParams(new LayoutParams(
+						LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
+				for (int j = 0; j < tableSize; j++) {
+					cell[i][j] = new LinearLayout(this);
+					text[i][j] = new TextView(this);
+					text[i][j].setText("");
+					text[i][j].setPadding(0, 0, 4, 3);
+					text[i][j].setGravity(Gravity.CENTER);
+					// space between table and screen
+					text[i][j].setLayoutParams(new LayoutParams(min
+							/ (tableSize + 2), min / (tableSize + 2)));
+					cell[i][j].addView(text[i][j]);
+					cell[i][j].setBackgroundColor(Color.WHITE);
+					cell[i][j].setLayoutParams(llp1);
+					tr[i].addView(cell[i][j]);
+				}
+				tl1.addView(tr[i]);
+			}
+
+			// addContentView(tl1, param_tayBac);
+			break;
+		case "5.0":
+			tableSize = 9;
+			squareLimited = 23;
+			constanPartitionSquare = 3;
+			// create TableLayout for TableRows
+			tl1 = new TableLayout(this);
+
+			llp1 = new TableRow.LayoutParams(LayoutParams.WRAP_CONTENT,
+					LayoutParams.WRAP_CONTENT);
+			llp1.setMargins(2, 2, 2, 2);// 2px margin (duo`ng ke?)
+
+			tl1.setLayoutParams(new TableRow.LayoutParams(
+					TableRow.LayoutParams.WRAP_CONTENT,
+					TableRow.LayoutParams.WRAP_CONTENT));
+			// tl1.setStretchAllColumns(true);
+			tr = new TableRow[tableSize];
+			text = new TextView[tableSize][tableSize];
+			cell = new LinearLayout[tableSize][tableSize];
+			for (int i = 0; i < tableSize; i++) {
+				tr[i] = new TableRow(this);
+				// set bgcolor for table row
+				tr[i].setBackgroundColor(Color.DKGRAY);
+				// Border between rows
+				tr[i].setPadding(0, 0, 0, 2);
+				// tr will wrap around contents
+				tr[i].setLayoutParams(new LayoutParams(
+						LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
+				for (int j = 0; j < tableSize; j++) {
+					cell[i][j] = new LinearLayout(this);
+					text[i][j] = new TextView(this);
+					text[i][j].setText("");
+					text[i][j].setPadding(0, 0, 4, 3);
+					text[i][j].setGravity(Gravity.CENTER);
+					// space between table and screen
+					text[i][j].setLayoutParams(new LayoutParams(min
+							/ (tableSize + 2), min / (tableSize + 2)));
+					cell[i][j].addView(text[i][j]);
+					cell[i][j].setBackgroundColor(Color.WHITE);
+					cell[i][j].setLayoutParams(llp1);
+					tr[i].addView(cell[i][j]);
+				}
+				tl1.addView(tr[i]);
+			}
+
+			// rl.addView(tl1,param_tayBac);
+			break;
+		default:
+		}
+
+		// -------------------------------------------------------------------------
+		// set onDrag number-line on tableLayout
+		tl1.setId(ID_TABLE_LAYOUT);
+		// -------------------------------------------------------------------------
+		matrix = new int[tableSize][tableSize];
+		// Making number-lines and set color of squares
+		// Log.e("Level and size:", "" + level + "|" + tableSize);
+		// NumOne for insert to table, NumTwo for insert black squares
+		int theNumberTwo = 2;
+		randomize rd = new randomize();
+		for (int i = 0; i < tableSize; i++) {
+			rd.setRangeValue(2, 15);
+			theNumberTwo = rd.getRandomNumber();
+			for (int j = 0; j < tableSize; j++) {
+				rd.setRangeValue(1, 9);
+				// random crossnumber
+				matrix[i][j] = rd.getRandomNumber();
+				if ((i + j) % theNumberTwo == 0) {
+					cell[i][j].setBackgroundColor(Color.BLACK);
+					matrix[i][j] = 0;
+					// Log.e("numberTwo:", theNumberTwo + "");
+				}
+				if (matrix[i][j] != 0) {
+					text[i][j].setText("" + matrix[i][j]);
+				}
+			}
+		}
+		int counter = 0, temp[][] = new int[tableSize][tableSize];
+
+		for (int j = 0; j < tableSize; j++) {
+			rd.setRangeValue(2, 15);
+			theNumberTwo = rd.getRandomNumber();
+			for (int i = 0; i < tableSize; i++) {
+				rd.setRangeValue(1, 9);
+				// random crossnumber
+				matrix[i][j] = rd.getRandomNumber();
+				if ((i + j) % theNumberTwo == 0) {
+					cell[i][j].setBackgroundColor(Color.BLACK);
+					matrix[i][j] = 0;
+					// Log.e("numberTwo:", theNumberTwo + "");
+				}
+				if (matrix[i][j] != 0) {
+					text[i][j].setText("" + matrix[i][j]);
+				}
+			}
+		}
+
+		// ----- fill white square not true to black---------------
+		// -----scan horizontal
+		for (int i = 0; i < tableSize; i++) {
+			counter = 0;
+			for (int j = 0; j < tableSize; j++) {
+				if (((ColorDrawable) cell[i][j].getBackground()).getColor() == Color.WHITE
+						&& matrix[i][j] > 0) {
+					counter++;// white square
+					temp[i][j] = matrix[i][j];
+					// Log.e("W_counter:", "" + counter);
+					if (j == tableSize - 1) {
+						if (counter < 2) {
+							temp[i][j] = -1;
+							// text[i][j].setText("X");
+							// Log.e("B_counter:", "" + counter);// Bien
+							counter = 0;
+						}
+					}
+				} else if (((ColorDrawable) cell[i][j].getBackground())
+						.getColor() == Color.BLACK || matrix[i][j] == 0) {
+					temp[i][j] = 0;
+					if (j - 1 >= 0) {
+						if (counter < 2) {
+							temp[i][j - 1] = -1;
+							// text[i][j - 1].setText("X");
+						}
+					}
+					// Log.e("D_counter:", "" + counter);// Den
+					counter = 0;
+				}
+			}
+			// Log.e("E_counter:", "" + counter);// End
+		}
+		// ----- scan vertical
+		tmp = new int[tableSize][tableSize];
+		for (int j = 0; j < tableSize; j++) {
+			counter = 0;
+			for (int i = 0; i < tableSize; i++) {
+				if (((ColorDrawable) cell[i][j].getBackground()).getColor() == Color.WHITE
+						&& matrix[i][j] > 0) {
+					counter++;// white square
+					tmp[i][j] = matrix[i][j];
+					// Log.e("W_counter:", "" + counter);
+					if (i == tableSize - 1) {
+						if (counter < 2) {
+							tmp[i][j] = -1;
+							// text[i][j].setText(text[i][j].getText()+"Y");
+							// Log.e("B_counter:", "" + counter);// Bien
+							counter = 0;
+						}
+					}
+				} else if (((ColorDrawable) cell[i][j].getBackground())
+						.getColor() == Color.BLACK || matrix[i][j] == 0) {
+					tmp[i][j] = 0;
+					if (i - 1 >= 0) {
+						if (counter < 2) {
+							tmp[i - 1][j] = -1;
+							// text[i-1][j].setText(text[i][j].getText()+"Y");
+						}
+					}
+					// Log.e("D_counter:", "" + counter);// Den
+					counter = 0;
+				}
+			}
+			// Log.e("E_counter:", "" + counter);// End
+		}
+		// ----- Fill white square not true:
+		counter = 0;// count black square
+		for (int i = 0; i < tableSize; i++) {
+			for (int j = 0; j < tableSize; j++) {
+				if (((ColorDrawable) cell[i][j].getBackground()).getColor() == Color.BLACK) {
+					matrix[i][j] = 0;
+					text[i][j].setText("");
+
+				}
+				if (matrix[i][j] == 0) {
+					cell[i][j].setBackgroundColor(Color.BLACK);// cho chac an
+					counter++; // counting black square
+				}
+				if (temp[i][j] < 0 && tmp[i][j] < 0) {
+					matrix[i][j] = 0;
+					text[i][j].setText("");
+					cell[i][j].setBackgroundColor(Color.BLACK);
+					counter++; // counting black square
+				}
+
+			}
+		}
+		// -------------------------------------------------
+		// Partitioning black squares again
+		int a = 0, r = 0, b = 0, l = 0;// above,right,bottom,left distances
+		int squareCount = 0;
+		int tryToLoop = 0;// for not loop forever
+		if (counter > squareLimited) {
+			int i = 0, j = 0;
+			rd.setRangeValue(1, 9);
+			while (counter > squareLimited && tryToLoop < 20) {// add more white
+																// squares
+				tryToLoop++;
+				i = 0;
+				j = 0;
+				while (i < tableSize && counter > squareLimited) {
+					while (j < tableSize && counter > squareLimited) {
+						squareCount = 0;
+						a = 0;
+						r = 0;
+						b = 0;
+						l = 0;
+						if (matrix[i][j] == 0) {// Black square
+
+							if (i - 1 >= 0 && matrix[i - 1][j] == 0) {
+								squareCount++;
+								a++;
+							}
+							if (i + 1 < tableSize && matrix[i + 1][j] == 0) {
+								squareCount++;
+								b++;
+							}
+							if (j - 1 >= 0 && matrix[i][j - 1] == 0) {
+								squareCount++;
+								l++;
+							}
+							if (j + 1 < tableSize && matrix[i][j + 1] == 0) {
+								squareCount++;
+								r++;
+							}
+							if (squareCount > constanPartitionSquare) {
+								if (a > 0) {
+									matrix[i - 1][j] = rd.getRandomNumber();
+									cell[i - 1][j]
+											.setBackgroundColor(Color.WHITE);
+									text[i - 1][j].setText(""
+											+ matrix[i - 1][j]);
+									counter--;
+									break;
+								}
+								if (b > 0) {
+									matrix[i + 1][j] = rd.getRandomNumber();
+									cell[i + 1][j]
+											.setBackgroundColor(Color.WHITE);
+									text[i + 1][j].setText(""
+											+ matrix[i + 1][j]);
+									counter--;
+									break;
+								}
+								if (l > 0) {
+									matrix[i][j - 1] = rd.getRandomNumber();
+									cell[i][j - 1]
+											.setBackgroundColor(Color.WHITE);
+									text[i][j - 1].setText(""
+											+ matrix[i + 1][j]);
+									counter--;
+									break;
+								}
+								if (r > 0) {
+									matrix[i][j + 1] = rd.getRandomNumber();
+									cell[i][j + 1]
+											.setBackgroundColor(Color.WHITE);
+									text[i][j + 1].setText(""
+											+ matrix[i + 1][j]);
+									counter--;
+									break;
+								}
+							}
+						}
+						j++;
+					}
+					i++;
+				}
+				/*
+				 * Log.e("TryLoop,counter,squarelim,constanPar:", "" + tryToLoop
+				 * + "|" + counter + "|" + squareLimited + "|" +
+				 * constanPartitionSquare);
+				 */
+			}
+		}
+		// ---------------------------------------------------------------------
+		if (counter < squareLimited) {
+			int i = 0, j = 0;
+			rd.setRangeValue(1, 9);
+			tryToLoop = 0;
+			while (counter < squareLimited && tryToLoop < 20) {// add more black
+																// square
+				tryToLoop++;
+				i = 0;
+				j = 0;
+				while (i < tableSize && counter < squareLimited) {
+					while (j < tableSize && counter < squareLimited) {
+						squareCount = 0;
+						a = 0;
+						r = 0;
+						b = 0;
+						l = 0;
+						if (matrix[i][j] != 0) {// White square
+							if (i - 1 >= 0 && matrix[i - 1][j] != 0) {
+								squareCount++;// counting white square
+								a++;
+							}
+							if (i + 1 < tableSize && matrix[i + 1][j] != 0) {
+								squareCount++;
+								b++;
+							}
+							if (j - 1 >= 0 && matrix[i][j - 1] != 0) {
+								squareCount++;
+								l++;
+							}
+							if (j + 1 < tableSize && matrix[i][j + 1] != 0) {
+								squareCount++;
+								r++;
+							}
+							if (squareCount > constanPartitionSquare) {
+								if (a > 0) {
+									matrix[i - 1][j] = 0;
+									cell[i - 1][j]
+											.setBackgroundColor(Color.BLACK);
+									text[i - 1][j].setText("");
+									counter++;
+									break;
+								}
+								if (b > 0) {
+									matrix[i + 1][j] = 0;
+									cell[i + 1][j]
+											.setBackgroundColor(Color.BLACK);
+									text[i + 1][j].setText("");
+									counter++;
+									break;
+								}
+								if (l > 0) {
+									matrix[i][j - 1] = 0;
+									cell[i][j - 1]
+											.setBackgroundColor(Color.BLACK);
+									text[i][j - 1].setText("");
+									counter++;
+									break;
+								}
+								if (r > 0) {
+									matrix[i][j + 1] = 0;
+									cell[i][j + 1]
+											.setBackgroundColor(Color.BLACK);
+									text[i][j + 1].setText("");
+									counter++;
+									break;
+								}
+							}
+						}
+						j++;
+					}
+					i++;
+				}
+			}
+		}
+
+		// -------------------------------------------------------
+		// Re Partition square black and white (swap black and white)
+		int loopCount = 15 + constanPartitionSquare * 2;
+		while (tryToLoop < loopCount) {
+			tryToLoop++;
+			for (int k = 0; k < tableSize; k++) {
+				for (int m = 0; m < tableSize; m++) {
+					if (matrix[k][m] == 0) {// Black square
+						squareCount = 0;
+						a = 0;
+						r = 0;
+						b = 0;
+						l = 0;
+						if (k - 1 >= 0 && matrix[k - 1][m] == 0) {
+							squareCount++;
+							a++;
+						}
+						if (k + 1 < tableSize && matrix[k + 1][m] == 0) {
+							squareCount++;
+							b++;
+						}
+						if (m - 1 >= 0 && matrix[k][m - 1] == 0) {
+							squareCount++;
+							l++;
+						}
+						if (m + 1 < tableSize && matrix[k][m + 1] == 0) {
+							squareCount++;
+							r++;
+						}
+						if (squareCount > constanPartitionSquare) {
+							// search white and black squares to swap
+							if (a > 0) {
+								int kk = k - 1, mm = m;
+								while (kk >= 0) {
+									if (matrix[kk][mm] != 0) {// white
+																// square
+										matrix[kk + 1][mm] = matrix[kk][mm];// swap
+																			// black
+																			// and
+																			// white
+										cell[kk][mm]
+												.setBackgroundColor(Color.BLACK);
+										text[kk + 1][mm]
+												.setText(matrix[kk + 1][mm]
+														+ "");// set
+																// value
+																// for
+																// text
+																// cell
+																// before
+										text[kk][mm].setText("");// black
+																	// cell
+									}
+									kk--;
+								}
+								break;
+							}
+
+							if (b > 0) {
+								int kk = k + 1, mm = m;
+								while (kk < tableSize) {
+									if (matrix[kk][mm] != 0) {// white
+																// square
+										matrix[kk - 1][mm] = matrix[kk][mm];// swap
+																			// black
+																			// and
+																			// white
+										cell[kk][mm]
+												.setBackgroundColor(Color.BLACK);
+										text[kk - 1][mm]
+												.setText(matrix[kk - 1][mm]
+														+ "");// set
+																// value
+																// for
+																// text
+																// cell
+																// before
+										text[kk][mm].setText("");// black
+																	// cell
+									}
+									kk++;
+								}
+								break;
+							}
+							if (r > 0) {
+								int kk = k, mm = m + 1;
+								while (mm < tableSize) {
+									if (matrix[kk][mm] != 0) {// white
+																// square
+										matrix[kk][mm - 1] = matrix[kk][mm];// swap
+																			// black
+																			// and
+																			// white
+										cell[kk][mm]
+												.setBackgroundColor(Color.BLACK);
+										text[kk][mm - 1]
+												.setText(matrix[kk][mm - 1]
+														+ "");// set
+																// value
+																// for
+																// text
+																// cell
+																// before
+										text[kk][mm].setText("");// black
+																	// cell
+									}
+									mm++;
+								}
+								break;
+							}
+
+							if (l > 0) {
+								int kk = k, mm = m - 1;
+								while (mm >= 0) {
+									if (matrix[kk][mm] != 0) {// white
+																// square
+										matrix[kk][mm + 1] = matrix[kk][mm];// swap
+																			// black
+																			// and
+																			// white
+										cell[kk][mm]
+												.setBackgroundColor(Color.BLACK);
+										text[kk][mm + 1]
+												.setText(matrix[kk][mm + 1]
+														+ "");// set
+																// value
+																// for
+																// text
+																// cell
+																// before
+										text[kk][mm].setText("");// black
+																	// cell
+									}
+									mm--;
+								}
+								break;
+							}
+						}
+					}
+				}
+			}
+		}
+		// -------------------------------------------------------
+		// ----- fill white square not true to black---------------
+		// -----scan horizontal
+		tmp = new int[tableSize][tableSize];
+		temp = new int[tableSize][tableSize];
+		for (int i = 0; i < tableSize; i++) {
+			counter = 0;
+			for (int j = 0; j < tableSize; j++) {
+				if (((ColorDrawable) cell[i][j].getBackground()).getColor() == Color.WHITE
+						&& matrix[i][j] > 0) {
+					counter++;// white square
+					temp[i][j] = matrix[i][j];
+					// Log.e("W_counter:", "" + counter);
+					if (j == tableSize - 1) {
+						if (counter < 2) {
+							temp[i][j] = -1;
+							// text[i][j].setText("X");
+							// Log.e("B_counter:", "" + counter);// Bien
+							counter = 0;
+						}
+					}
+				} else if (((ColorDrawable) cell[i][j].getBackground())
+						.getColor() == Color.BLACK || matrix[i][j] == 0) {
+					temp[i][j] = 0;
+					if (j - 1 >= 0) {
+						if (counter < 2) {
+							temp[i][j - 1] = -1;
+							// text[i][j -
+							// 1].setText("X");////////////////////////////////////////////error
+						}
+					}
+					// Log.e("D_counter:", "" + counter);// Den
+					counter = 0;
+				}
+			}
+			// Log.e("E_counter:", "" + counter);// End
+		}
+		// ----- scan vertical
+
+		for (int j = 0; j < tableSize; j++) {
+			counter = 0;
+			for (int i = 0; i < tableSize; i++) {
+				if (((ColorDrawable) cell[i][j].getBackground()).getColor() == Color.WHITE
+						&& matrix[i][j] > 0) {
+					counter++;// white square
+					tmp[i][j] = matrix[i][j];
+					// Log.e("VW_counter:", "" + counter);
+					if (i == tableSize - 1) {
+						if (counter < 2) {
+							tmp[i][j] = -1;
+							// text[i][j].setText(text[i][j].getText() + "Y");
+							// Log.e("VB_counter:", "" + counter);// Bien
+							counter = 0;
+						}
+					}
+				} else if (((ColorDrawable) cell[i][j].getBackground())
+						.getColor() == Color.BLACK || matrix[i][j] == 0) {
+					tmp[i][j] = 0;
+					if (i - 1 >= 0) {
+						if (counter < 2) {
+							tmp[i - 1][j] = -1;
+							// text[i - 1][j].setText(text[i][j].getText() +
+							// "Y");
+						}
+					}
+					// Log.e("VD_counter:", "" + counter);// Den
+					counter = 0;
+				}
+			}
+			// Log.e("E_counter:", "" + counter);// End
+		}
+		// ----- Fill white square not true:
+		counter = 0;// count black square
+		for (int i = 0; i < tableSize; i++) {
+			for (int j = 0; j < tableSize; j++) {
+				if (((ColorDrawable) cell[i][j].getBackground()).getColor() == Color.BLACK) {
+					matrix[i][j] = 0;
+					text[i][j].setText("");
+
+				}
+				if (matrix[i][j] == 0) {
+					cell[i][j].setBackgroundColor(Color.BLACK);// cho chac an
+					counter++; // counting black square
+				}
+				if (temp[i][j] < 0 && tmp[i][j] < 0) {
+					matrix[i][j] = 0;
+					text[i][j].setText("");
+					cell[i][j].setBackgroundColor(Color.BLACK);
+					counter++; // counting black square
+				}
+
+			}
+		}
+		// Log.e("Black Squares:", "" + counter);
+		// ------------------------in ra matrix: -------------------------
+		for (int i = 0; i < tableSize; i++) {
+			for (int j = 0; j < tableSize; j++) {
+				System.out.print(matrix[i][j]);
+			}
+			System.out.println("");
+		}
+		// produce problems:
+		// --------------------------------------------------
+		counter = 0;// counter horizontal lines and vertical lines
+		String buf = "", listVertical = "", listHorizontal = "";
+		for (int i = 0; i < tableSize; i++) {
+			counter = 0;
+			buf = "";
+			for (int j = 0; j < tableSize; j++) {
+				if (matrix[i][j] > 0) {
+					buf += Integer.toString(matrix[i][j]);
+					counter++;
+				}
+				if (matrix[i][j] == 0 || j == tableSize - 1) {
+					if (counter > 1) {
+						listHorizontal += "|";
+						listHorizontal += buf;
+						counter = 0;
+						buf = "";
+					} else {
+						counter = 0;
+						buf = "";
+					}
+					continue;
+				}
+			}
+		}
+		Log.e("listHorizontal lines:", listHorizontal + " xx");
+		// Vertical lines:
+		for (int j = 0; j < tableSize; j++) {
+			counter = 0;
+			buf = "";
+			for (int i = 0; i < tableSize; i++) {
+				if (matrix[i][j] > 0) {
+					buf += Integer.toString(matrix[i][j]);
+					counter++;
+				}
+				if (matrix[i][j] == 0 || i == tableSize - 1) {
+					if (counter > 1) {
+						listVertical += "|";
+						listVertical += buf;
+						counter = 0;
+						buf = "";
+					} else {
+						counter = 0;
+						buf = "";
+					}
+					continue;
+				}
+			}
+		}
+		Log.e("listVertical lines:", listVertical + " yy");
+		// -----------------------------------------------------
+		// Draw more things and set events for problems
+		tx = new TextView(this);
+		tx.setText("Time: " + timePlaying);
+		// Log.e("ID_tl1",tl1.getId()+"");
+		// tx.setLayoutParams(param_tayBac);
+		// RelativeLayout rl = (RelativeLayout)
+		// findViewById(R.id.RelativeLayout1);
+		// param_dongBac.addRule(verb)
+		rl.addView(tx, param_dongBac);
+		rl.addView(tl1, param_tayBac);
+		tx.setId(ID_TIMER);
+
+		// -------------------------------------- Create Answers:
+		NumberLine lineHo = new NumberLine();
+		NumberLine lineVe = new NumberLine();
+		lineHo.addValue(listHorizontal);
+		lineVe.addValue(listVertical);
+		mixed = lineHo.mix(lineVe);
+		Log.e("Mixed string: ", mixed.toString() + " |");
+		mixedSize = mixed.size();
+		listAnswer = new TextView[mixedSize];
+
+		final ViewTreeObserver abc = tx.getViewTreeObserver();
+		for (int i = 0; i < mixedSize; i++) {
+			listAnswer[i] = new TextView(PlayActivity.this);
+			listAnswer[i].setId(ID_PREFIX_ANSWER_LINE + i);
+			listAnswer[i].setOnClickListener(new OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					
+				}
+			});
+		}
+		abc.addOnGlobalLayoutListener(new OnGlobalLayoutListener() {
+			@SuppressWarnings("deprecation")
+			@Override
+			public void onGlobalLayout() {
+				axis = new int[2];
+				int H = tl1.getHeight();
+				int W = tl1.getWidth();
+				int y = 0;
+				int enter;
+				int left = 0, right = 0, bottom = 35, top = 0;
+				int lenText = 2;
+				tx.getViewTreeObserver().removeGlobalOnLayoutListener(this);// exit
+																			// Loop
+																			// ??!
+
+				tl1.getLocationOnScreen(axis);
+				y = axis[1];
+				Log.e("tableLayout X:Y ", axis[0] + ":" + axis[1]);
+				Log.e("tableLayout H:W", H + ":" + W);
+				tx.getLocationOnScreen(axis);
+				enter = tx.getHeight();
+				Log.e("timeTex X:Y ", axis[0] + ":" + axis[1]);
+				// -------------------------------
+				under_params.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
+				under_params.setMargins(axis[0], axis[1], right, bottom);
+				rl.addView(undoBt, under_params);
+				// -------------------------------
+				for (int i = 0; i < mixedSize; i++) {
+					// listAnswer[i] = new TextView(PlayActivity.this);
+					listAnswer[i].setId(ID_PREFIX_ANSWER_LINE + i);
+					listAnswer[i].setText(mixed.get(i));
+					listAnswer[i].setFocusable(true);
+					top += enter;
+					if (i == 0) {
+						newLy.add(i, under_table);
+						under_table.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
+						under_table.setMargins(0, H, 35, 35);// canh le`
+																// trai,tren,phai,duoi
+						rl.addView(listAnswer[i], under_table);
+
+						top = H;
+					} else {
+						listAnswer[i - 1].getLocationOnScreen(axis);
+						if (top > height - y || lenText < mixed.get(i).length()) {// next
+																					// to
+																					// new
+																					// column
+							// left += newLy.get(i-1).leftMargin;
+							Rect bounds = new Rect();
+							Paint textPaint = listAnswer[i - 1].getPaint();
+							textPaint.getTextBounds(mixed.get(i), 0,
+									mixed.get(i).length(), bounds);
+							// int height = bounds.height();
+							int widthTx = bounds.width();
+							left += widthTx;// pixels
+							left += 10;
+							top = H;
+							lenText++;
+						}
+						RelativeLayout.LayoutParams newLyInstan = new RelativeLayout.LayoutParams(
+								LayoutParams.WRAP_CONTENT,
+								LayoutParams.WRAP_CONTENT);
+						newLyInstan.setMargins(left, top, right, bottom);
+						rl.addView(listAnswer[i], newLyInstan);
+						Log.e("margin L:T", newLyInstan.leftMargin + ":"
+								+ newLyInstan.topMargin);
+						newLy.add(newLyInstan);
+					}
+				}
+			}
+		});
+		// ------------------------ when fill number to table:
+		final TextView LargeText = new TextView(this);
+		LargeText.setText("honor");
+		RelativeLayout.LayoutParams large = new RelativeLayout.LayoutParams(
+				RelativeLayout.LayoutParams.WRAP_CONTENT,
+				RelativeLayout.LayoutParams.WRAP_CONTENT);
+		large.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+		large.addRule(RelativeLayout.CENTER_IN_PARENT);
+		rl.addView(LargeText, large);
+
+		axisLast = new int[2];
+		state = new int[tableSize][tableSize];
+		for (int j = 0; j < tableSize; j++) {
+			for (int j2 = 0; j2 < tableSize; j2++) {
+				text[j][j2].setTag(j * tableSize + j2);
+				// id chia tablesize lay
+				// nguyen => i, chia co du
+				// => j
+				if (matrix[j][j2] == 0) {
+					tmp[j][j2] = 0;
+					state[j][j2] = 0;// black square
+				} else {
+					text[j][j2].setText("");
+					state[j][j2] = -1;// empty square
+					tmp[j][j2] = -1;// tmp chua dap an cua nguoi choi
+					// matrix chua de bai ban dau
+					// state chua trang thai cua bang
+				}
+			}
+		}
+		for (int i = 0; i < tableSize; i++) {
+			for (int j = 0; j < tableSize; j++) {
+				text[i][j].setOnClickListener(new OnClickListener() {
+
+					@Override
+					public void onClick(View v) {
+						TextView t;
+						t = (TextView) v;
+						// Log.e("countTouchToTable","> "+countTouchToTable);
+						if (matrix[(Integer) v.getTag() / tableSize][(Integer) v
+								.getTag() % tableSize] != 0) {
+							t.setTextColor(Color.RED);
+							v.setBackgroundColor(Color.LTGRAY);
+							// so le lan chon square = 0
+							if (countTouchToTable % 2 != 1) {
+								while (true) {
+									if (tableClicked.size() < 1)
+										break;
+									t = (TextView) tableClicked.pop();
+									t.setBackgroundColor(Color.WHITE);
+									t.setTextColor(Color.BLACK);
+									// Log.e("POP",t.getTag()+"|");
+								}
+								countTouchToTable++;
+								axis[0] = (Integer) v.getTag() / tableSize;
+								axis[1] = (Integer) v.getTag() % tableSize;
+								tableClicked.push(v);
+							} else {
+								tableClicked.push(v);
+								countTouchToTable = 0;
+								// TODO DOING kiem tra tinh hop le cua day can
+								// dien va dien vao
+								axisLast[0] = (Integer) v.getTag() / tableSize;
+								axisLast[1] = (Integer) v.getTag() % tableSize;
+								// horizontal line:
+								if (axis[0] == axisLast[0]
+										&& axis[1] != axisLast[1]) {
+									LargeText.setText("Horizontal " + axis[1]
+											+ ":" + axisLast[1]);
+									// Xac dinh vung can dien horizontal:
+									int x = axis[0], y = axis[1];
+									while (y > -1) {
+										// go back until meet black-square or
+										// margin-left
+										if (y - 1 > 0 && matrix[x][y - 1] > 0) {
+											// y--;
+										} else {
+											// met black-square
+											if (y - 1 > 0
+													&& matrix[x][y - 1] == 0) {
+												axis[1] = y;
+												break;
+											}
+											if (y == 0) { // margin left
+												if (matrix[x][y] != 0) {
+													axis[1] = y;
+												}
+											}
+										}
+										y--;
+									}
+
+									x = axis[0];
+									y = axis[1];
+									while (y < tableSize) {
+										if (y + 1 < tableSize
+												&& matrix[x][y + 1] != 0) {
+											// y++;
+										} else {
+											if (y + 1 < tableSize
+													&& matrix[x][y + 1] == 0) {
+												axisLast[1] = y;
+												break;
+											}
+											if (y == tableSize - 1) {
+												if (matrix[x][y] != 0) {
+													axisLast[1] = y;
+												}
+											}
+										}
+										y++;
+									}
+									Log.e("asix Y", "-> " + axis[1] + ":"
+											+ axisLast[1]);
+									if (axis[1] != axisLast[1]) {// day dien hop
+																	// le
+										// Is line empty?:
+										boolean emptyLine = true, rightLine = true;
+										// rightLine will check when cross line
+										// horizontal
+										// and vertical line are right cross or
+										// wrong
+										int YendLine = axisLast[1] + 1;
+										for (int k = axis[1]; k < YendLine; k++) {
+											if (state[axis[0]][k] != -1) {
+												emptyLine = false;
+												break;
+											}
+										}
+										if (emptyLine) {
+											// TODO Fill answer was chosen to
+											// this line:
+											if (axisLast[1] - axis[1] + 1 == choosingAnswer
+													.length()) {
+												for (int k = axis[1]; k < YendLine; k++) {
+													state[axis[0]][k] = 1;// number-square-filled
+													tmp[axis[0]][k] = choosingAnswer
+															.charAt(k - axis[1]) - '0';
+													// Log.e("X:Y",axis[0]+":"+axis[1]+":"+axisLast[1]+":"+choosingAnswer+":"+tmp[axis[0]][k]+":"+text[axis[0]][k].getText());
+													text[axis[0]][k].setText(choosingAnswer
+															.charAt(k - axis[1])
+															+ "");
+													// set answered focusable
+													// false
+													if (!answerChooseen
+															.isEmpty()) {
+														idChooseens
+																.push(answerChooseen
+																		.firstElement()
+																		.getId());
+														answerChooseen
+																.firstElement()
+																.setFocusable(
+																		false);
+														answerChooseen
+																.firstElement()
+																.setTextColor(
+																		Color.WHITE);
+													}
+													Integer[][] castToIneger = new Integer[2][2];
+													castToIneger[0][0] = axis[0];
+													castToIneger[0][1] = axis[1];
+													castToIneger[1][0] = axisLast[0];
+													castToIneger[1][1] = axisLast[1];
+													axisStackUndo
+															.push(castToIneger);
+												}
+											}
+										} else {
+											if (axisLast[1] - axis[1] + 1 == choosingAnswer
+													.length()) {
+												for (int k = axis[1]; k < YendLine; k++) {
+													if (state[axis[0]][k] != -1) {
+														Log.e("tmp[]:choosen[]",
+																tmp[axis[0]][k]
+																		+ ":"
+																		+ choosingAnswer
+																				.charAt(k
+																						- axis[1]));
+														if (tmp[axis[0]][k] != choosingAnswer
+																.charAt(k
+																		- axis[1]) - '0') {
+															rightLine = false;// TODO
+																				// Not
+																				// test
+																				// yet!
+															break;
+														}
+													}
+												}
+												if (rightLine) {// TODO Not test
+																// yet!
+													for (int k = axis[1]; k < YendLine; k++) {
+														state[axis[0]][k] = 1;// number-square-filled
+														tmp[axis[0]][k] = choosingAnswer
+																.charAt(k
+																		- axis[1]) - '0';
+														// Log.e("X:Y",axis[0]+":"+axis[1]+":"+axisLast[1]+":"+choosingAnswer+":"+tmp[axis[0]][k]+":"+text[axis[0]][k].getText());
+														text[axis[0]][k].setText(choosingAnswer
+																.charAt(k
+																		- axis[1])
+																+ "");
+														// set answered
+														// focusable false
+														if (!answerChooseen
+																.isEmpty()) {
+															idChooseens
+																	.push(answerChooseen
+																			.firstElement()
+																			.getId());
+															answerChooseen
+																	.firstElement()
+																	.setFocusable(
+																			false);
+															answerChooseen
+																	.firstElement()
+																	.setTextColor(
+																			Color.WHITE);
+														}
+														Integer[][] castToIneger = new Integer[2][2];
+														castToIneger[0][0] = axis[0];
+														castToIneger[0][1] = axis[1];
+														castToIneger[1][0] = axisLast[0];
+														castToIneger[1][1] = axisLast[1];
+														axisStackUndo
+																.push(castToIneger);
+													}
+												}
+											}
+										}
+									}
+
+								} else if (axis[1] == axisLast[1]
+										&& axis[0] != axisLast[0]) {
+									LargeText.setText("Vertical " + axis[0]
+											+ ":" + axisLast[0]);
+								}
+
+							}
+						}
+					}
+				});
+			}
+		}
+		// -------------------- count time
+		new CountDownTimer(180000, 1000) {
+
+			@Override
+			public void onTick(long millis) {
+				int seconds = (int) (millis / 1000) % 60;
+				int minutes = (int) ((millis / (1000 * 60)) % 60);
+				// int hours = (int) ((millis / (1000*60*60)) % 24);
+				// String text =
+				// String.format("%02d hours, %02d minutes, %02d seconds",hours,minutes,seconds);
+				String text = String
+						.format("Time: %02d'%02d", minutes, seconds);
+				tx.setText(text);
+			}
+
+			@Override
+			public void onFinish() {
+				tx.setText("Kabooom!");
+			}
+		}.start();
+	}
+	protected void whenChooseAnswer(){
+		
+	}
+	protected void undoAndRemoveSquare(){
+		//TODO
+		boolean willRemoveSquare = true;
+		if (axis[0] == axisLast[0] && axis[1] != axisLast[1]) {
+			for (int i = axis[1]; i <= axisLast[1]; i++) {
+				willRemoveSquare = true;
+
+				// TODO kiem tra xem co giao nhau ko, neu ko thi xoa o
+				// do, giao thi du~ o do lai
+				if (axis[0] > 0 && state[axis[0] - 1][i] == 1) {
+					int x = axis[0] - 1;
+					Log.e("i:x", i + ":" + x);
+					while (x > -1) {
+						if (state[x][i] == 1) {
+							willRemoveSquare = false;
+							break;
+						}
+						if (state[x][i] < 1)
+							break;
+						x--;
+					}
+					if (willRemoveSquare == false)
+						break;
+					willRemoveSquare = true;
+					if (axis[0] + 1 < tableSize) {
+						x = axis[0] + 1;
+						while (x < tableSize) {
+							if (state[x][i] == 1) {
+								willRemoveSquare = false;
+								break;
+							}
+							if (state[x][i] < 1)
+								break;
+							x++;
+						}
+
+					}
+					if (willRemoveSquare == false)
+						break;
+				}
+				if (willRemoveSquare) {
+					tmp[axis[0]][i] = -1;
+					state[axis[0]][i] = -1;
+					text[axis[0]][i].setText("");
+				}
+			}
+		}
+	}
+}
+
+// 4 7 11 19 23 black squares limited

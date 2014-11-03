@@ -1,0 +1,8 @@
+package com.hieu.supporter;
+
+import java.util.List;
+
+public class NumberLine {
+	private List<String> value;
+	private List<Integer> len;
+}

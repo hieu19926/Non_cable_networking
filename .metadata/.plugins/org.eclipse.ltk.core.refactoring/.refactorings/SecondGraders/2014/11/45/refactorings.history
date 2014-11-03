@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename field &apos;RelativeLayout1&apos; in &apos;com.primary.secondgraders.R.id&apos; to &apos;mucluc&apos;&#x0D;&#x0A;- Original project: &apos;SecondGraders&apos;&#x0D;&#x0A;- Original element: &apos;com.primary.secondgraders.R.id.RelativeLayout1&apos;&#x0D;&#x0A;- Renamed element: &apos;com.primary.secondgraders.R.id.mucluc&apos;&#x0D;&#x0A;- Update references to refactored element&#x0D;&#x0A;- Update textual occurrences in comments and strings" delegate="false" deprecate="true" description="Rename field &apos;RelativeLayout1&apos;" flags="589830" getter="false" id="org.eclipse.jdt.ui.rename.field" input="/gen&lt;com.primary.secondgraders{R.java[R[id^RelativeLayout1" name="mucluc" references="true" setter="false" stamp="1414978619541" textual="false" version="1.0"/>
+</session>

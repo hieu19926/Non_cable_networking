@@ -1,0 +1,32 @@
+package com.hieu.supporter;
+
+import java.util.LinkedList;
+
+public class NumberLine {
+	private LinkedList<String> value;
+	private LinkedList<Integer> len;
+
+	public NumberLine() {
+		value = new LinkedList<String>();
+		len = new LinkedList<Integer>();
+	}
+
+	void addValue(String numberList) {
+		int l = numberList.length();
+		String buf = "";
+		int counterLength=0;
+		for (int i = 0; i < l; i++) {
+			if(numberList.charAt(i)=='|'){
+				if(i!=0){
+					value.add(buf);
+					len.add(counterLength);
+					buf="";
+					counterLength=0;
+				}
+			}else{
+				buf+=numberList.charAt(i);
+				counterLength++;
+			}
+		}
+	}
+}

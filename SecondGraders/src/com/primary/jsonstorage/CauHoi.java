@@ -6,6 +6,8 @@ import com.google.gson.annotations.SerializedName;
 
 public class CauHoi {
 	@Expose
+	private String number;// câu hỏi số mấy
+	@Expose
 	@SerializedName("question")
 	private String cauhoi;
 	@SerializedName("answer_a")
@@ -21,7 +23,8 @@ public class CauHoi {
 	public CauHoi(){
 		
 	}
-	public CauHoi(String cauhoi, String tla, String tlb, String tlc, String tld, String dapan){
+	public CauHoi(String num, String cauhoi, String tla, String tlb, String tlc, String tld, String dapan){
+		this.number = num;
 		this.cauhoi = cauhoi;
 		this.tla = tla;
 		this.tlb = tlb;
@@ -29,7 +32,8 @@ public class CauHoi {
 		this.tld = tld;
 		this.dapan_dung = dapan;
 	}
-	public void setData(String cauhoi, String tla, String tlb, String tlc, String tld, String dapan){
+	public void setData(String num, String cauhoi, String tla, String tlb, String tlc, String tld, String dapan){
+		this.number = num;
 		this.cauhoi = cauhoi;
 		this.tla = tla;
 		this.tlb = tlb;
@@ -54,5 +58,8 @@ public class CauHoi {
 	}
 	public String getDapAn(){
 		return dapan_dung;
+	}
+	public String getNumberQuestion(){
+		return this.number;
 	}
 }

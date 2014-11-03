@@ -1,0 +1,19 @@
+package com.hieu.supporter;
+
+import java.util.LinkedList;
+import java.util.List;
+
+public class NumberLine {
+	private LinkedList<String> value;
+	private LinkedList<Integer> len;
+
+	public NumberLine() {
+		value = new LinkedList<String>();
+		len = new LinkedList<Integer>();
+	}
+
+	void addValue(String numberList) {
+		int l = numberList.length();
+		String buf = "";
+	}
+}

@@ -1,0 +1,108 @@
+package com.hieu.supporter;
+
+import java.util.LinkedList;
+
+import android.util.Log;
+
+public class NumberLine {
+	private LinkedList<String> value;
+	private LinkedList<Integer> len;
+
+	public NumberLine() {
+		value = new LinkedList<String>();
+		len = new LinkedList<Integer>();
+	}
+
+	public void addValue(String numberList) {
+		int l = numberList.length();
+		String buf = "";
+		int counterLength=0;
+		for (int i = 0; i < l; i++) {
+			if(numberList.charAt(i)=='|'){
+				if(i!=0){
+					value.add(buf);
+					len.add(counterLength);
+				}
+				buf="";
+				counterLength=0;
+			}else{
+				buf+=numberList.charAt(i);
+				counterLength++;
+			}
+		}
+		value.add(buf);
+		len.add(counterLength);
+	}
+	public String getValue(int index){
+		if(index>0 && index<len.size()){
+			return value.get(index);
+		}else{
+			return "Out of List.";
+		}
+	}
+	public int getLenNumber(int index){
+		if(index>0 && index<len.size()){
+			return len.get(index);
+		}else{
+			return -1;
+		}
+	}
+	public LinkedList<String> getValueList(){
+		return value;
+	}
+	public LinkedList<Integer> getLenNumberList(){
+		return len;
+	}
+	public LinkedList<String> mix(NumberLine other){
+		LinkedList<String> oValue = other.getValueList();
+		LinkedList<Integer> oLen = other.getLenNumberList();
+		Log.e("lenList: ",len.toString()+"|");
+		Log.e("oLenList:",oLen.toString());
+		int size = oLen.size();
+		String buf="";
+		for (int i = 0; i < size; i++) {
+			for (int j = i; j < size; j++) {
+				if(i!=j&&oLen.get(i)>oLen.get(j)){
+					buf=oValue.get(i);
+					oValue.set(i, oValue.get(j));
+					oValue.set(j, buf);
+				}
+			}
+		}
+		int size1 = len.size();
+		for (int i = 0; i < size1; i++) {
+			for (int j = i; j < size1; j++) {
+				if(i!=j&&len.get(i)>len.get(j)){
+					buf=value.get(i);
+					value.set(i, value.get(j));
+					value.set(j, buf);
+				}
+			}
+		}
+		Log.e("valueList: ",value.toString()+"|");
+		Log.e("oValueList: ",oValue.toString()+"|");
+		int minSize = size;
+		LinkedList<String> mixed = new LinkedList<String>();
+		if(minSize>size1){
+			minSize=size1;
+		}
+		for (int i = 0; i < minSize; i++) {
+			if(len.get(i)<oLen.get(i)){
+				mixed.add(value.get(i));
+			}else{
+				mixed.add(oValue.get(i));
+			}
+		}
+		if(size==minSize){// value longer than oValue
+			minSize--;
+			for (int i = minSize ; i < size1; i++) {
+				mixed.add(value.get(i));
+			}
+		}else{
+			for (int i = minSize ; i < size; i++) {
+				mixed.add(oValue.get(i));
+			}
+		}
+		return mixed;
+	}
+}
